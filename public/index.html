@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midnight Stranger Chat</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 h-screen flex flex-col font-sans">
+
+    <!-- Header App Bar -->
+    <header class="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center shadow-lg">
+        <h1 class="text-xl font-bold tracking-wider text-teal-400">🌙 MIDNIGHT<span class="text-white">STRANGER</span></h1>
+        <div id="status" class="text-sm font-medium text-gray-400 bg-gray-900 px-3 py-1 rounded-full border border-gray-700">
+            Disconnected
+        </div>
+    </header>
+
+    <!-- Main Live Chat Window -->
+    <main id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-4 max-w-4xl w-full mx-auto flex flex-col justify-end">
+        <div class="text-center text-gray-500 italic my-auto" id="welcome-msg">
+            Click "Start Chat" to pair up with a random stranger under the cover of midnight.
+        </div>
+    </main>
+
+    <!-- Typing Feedback Banner -->
+    <div id="typing-indicator" class="max-w-4xl w-full mx-auto px-4 h-6 text-sm text-teal-400 font-medium italic hidden">
+        Stranger is typing...
+    </div>
+
+    <!-- Interface Action Bar -->
+    <footer class="bg-gray-800 border-t border-gray-700 p-4 sticky bottom-0">
+        <div class="max-w-4xl mx-auto flex gap-3">
+            <button id="action-btn" class="bg-teal-500 hover:bg-teal-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition duration-200 active:scale-95 shadow-md whitespace-nowrap">
+                Start Chat
+            </button>
+            <input id="msg-input" type="text" placeholder="Type a message..." disabled
+                class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed" />
+            <button id="send-btn" disabled class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg transition duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                Send
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        const socket = io();
+
+        const chatBox = document.getElementById('chat-box');
+        const welcomeMsg = document.getElementById('welcome-msg');
+        const statusDiv = document.getElementById('status');
+        const actionBtn = document.getElementById('action-btn');
+        const msgInput = document.getElementById('msg-input');
+        const sendBtn = document.getElementById('send-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        let isChatting = false;
+        let typingTimeout;
+
+        function updateStatus(text, colorClass) {
+            statusDiv.textContent = text;
+            statusDiv.className = `text-sm font-medium bg-gray-900 px-3 py-1 rounded-full border border-gray-700 ${colorClass}`;
+        }
+
+        function appendSystemMessage(text) {
+            if(welcomeMsg) welcomeMsg.remove();
+            const msgRow = document.createElement('div');
+            msgRow.className = "text-center text-sm font-semibold text-gray-500 tracking-wide my-2 uppercase bg-gray-800/40 py-1 rounded border border-gray-800/80";
+            msgRow.textContent = text;
+            chatBox.appendChild(msgRow);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function appendMessage(text, isMe) {
+            const container = document.createElement('div');
+            container.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-md leading-relaxed ${
+                isMe ? 'bg-teal-500 text-gray-950 font-medium rounded-tr-none' : 'bg-gray-800 text-gray-100 rounded-tl-none border border-gray-700'
+            }`;
+            bubble.textContent = text;
+
+            container.appendChild(bubble);
+            chatBox.appendChild(container);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        actionBtn.addEventListener('click', () => {
+            if (!isChatting) {
+                socket.emit('findMatch');
+                actionBtn.textContent = 'Skip';
+                actionBtn.className = "bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 rounded-lg transition duration-200 active:scale-95 shadow-md";
+            } else {
+                socket.emit('findMatch');
+            }
+        });
+
+        function sendMessage() {
+            const text = msgInput.value.trim();
+            if (text && isChatting) {
+                appendMessage(text, true);
+                socket.emit('sendMessage', text);
+                msgInput.value = '';
+                socket.emit('typing', false);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+        msgInput.addEventListener('input', () => {
+            if (!isChatting) return;
+            socket.emit('typing', true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                socket.emit('typing', false);
+            }, 2000);
+        });
+
+        socket.on('waiting', () => {
+            isChatting = false;
+            msgInput.disabled = true;
+            sendBtn.disabled = true;
+            typingIndicator.classList.add('hidden');
+            updateStatus('Searching...', 'text-yellow-400');
+            appendSystemMessage('Searching for a stranger at midnight...');
+        });
+
+        socket.on('matched', () => {
+            isChatting = true;
+            msgInput.disabled = false;
+            sendBtn.disabled = false;
+            msgInput.focus();
+            updateStatus('Connected', 'text-green-400');
+            chatBox.innerHTML = ''; 
+            appendSystemMessage('You are paired with a random stranger. Say hi!');
+        });
+
+        socket.on('receiveMessage', (message) => {
+            appendMessage(message, false);
+        });
+
+        socket.on('partnerTyping', (isTyping) => {
+            if (isTyping) {
+                typingIndicator.classList.remove('hidden');
+            } else {
+                typingIndicator.classList.add('hidden');
+            }
+        });
+
+        socket.on('partnerDisconnected', () => {
+            isChatting = false;
+            msgInput.disabled = true;
+            sendBtn.disabled = true;
+            typingIndicator.classList.add('hidden');
+            updateStatus('Disconnected', 'text-red-400');
+            appendSystemMessage('Stranger disconnected.');
+            actionBtn.textContent = 'Find New';
+            actionBtn.className = "bg-teal-500 hover:bg-teal-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition duration-200 active:scale-95 shadow-md";
+        });
+    </script>
+</body>
+</html>
