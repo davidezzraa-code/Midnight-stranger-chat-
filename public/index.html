@@ -7,42 +7,62 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://tailwindcss.com"></script>
     <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #1f2937; }
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        /* Premium custom scrollbar styling */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        
+        /* Frosted Glass effect class */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 h-screen flex flex-col font-sans">
+<body class="bg-[#090d16] text-slate-200 h-screen flex flex-col font-sans antialiased selection:bg-indigo-500/30">
 
-    <!-- Header App Bar -->
-    <header class="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center shadow-lg">
-        <h1 class="text-xl font-bold tracking-wider text-teal-400">🌙 MIDNIGHT<span class="text-white">STRANGER</span></h1>
-        <div id="status" class="text-sm font-medium text-gray-400 bg-gray-900 px-3 py-1 rounded-full border border-gray-700">
-            Disconnected
+    <!-- Premium Minimal Header -->
+    <header class="glass-panel border-b border-slate-800/60 p-5 sticky top-0 z-50 flex justify-between items-center transition-all">
+        <div class="flex items-center gap-3">
+            <div class="h-2.5 w-2.5 rounded-full bg-indigo-500 animate-pulse"></div>
+            <h1 class="text-lg font-medium tracking-tight text-white">
+                midnight<span class="text-indigo-400 font-light">stranger</span>
+            </h1>
+        </div>
+        <div id="status" class="text-xs tracking-wider uppercase font-semibold text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-md border border-slate-800/80 transition-all">
+            Offline
         </div>
     </header>
 
-    <!-- Main Live Chat Window -->
-    <main id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-4 max-w-4xl w-full mx-auto flex flex-col justify-end">
-        <div class="text-center text-gray-500 italic my-auto" id="welcome-msg">
-            Click "Start Chat" to pair up with a random stranger under the cover of midnight.
+    <!-- Main Dynamic Chat Interface -->
+    <main id="chat-box" class="flex-1 p-6 overflow-y-auto max-w-3xl w-full mx-auto flex flex-col justify-end space-y-5">
+        <div class="text-center text-slate-500 max-w-sm mx-auto my-auto space-y-2 transition-opacity" id="welcome-msg">
+            <p class="text-base text-slate-400 font-medium">Safe. Anonymous. Instant.</p>
+            <p class="text-xs leading-relaxed text-slate-500">Click the action button below to instantly connect with a random person under the cover of midnight.</p>
         </div>
     </main>
 
-    <!-- Typing Feedback Banner -->
-    <div id="typing-indicator" class="max-w-4xl w-full mx-auto px-4 h-6 text-sm text-teal-400 font-medium italic hidden">
-        Stranger is typing...
+    <!-- Sleek Typing Feedback Banner -->
+    <div class="max-w-3xl w-full mx-auto px-6 h-5">
+        <div id="typing-indicator" class="text-xs text-indigo-400/90 font-medium tracking-wide hidden animate-pulse">
+            Stranger is typing...
+        </div>
     </div>
 
-    <!-- Interface Action Bar -->
-    <footer class="bg-gray-800 border-t border-gray-700 p-4 sticky bottom-0">
-        <div class="max-w-4xl mx-auto flex gap-3">
-            <button id="action-btn" class="bg-teal-500 hover:bg-teal-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition duration-200 active:scale-95 shadow-md whitespace-nowrap">
+    <!-- Minimalist Interface Control Center -->
+    <footer class="p-6 bg-gradient-to-t from-[#090d16] via-[#090d16]/90 to-transparent sticky bottom-0">
+        <div class="max-w-3xl mx-auto flex items-center gap-4 bg-slate-900/40 p-2 rounded-xl border border-slate-800/50 glass-panel shadow-2xl">
+            
+            <button id="action-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-3 rounded-lg transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-600/10 whitespace-nowrap">
                 Start Chat
             </button>
-            <input id="msg-input" type="text" placeholder="Type a message..." disabled
-                class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed" />
-            <button id="send-btn" disabled class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg transition duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+            
+            <input id="msg-input" type="text" placeholder="Write an anonymous message..." disabled
+                class="flex-1 bg-transparent text-sm px-2 py-3 text-slate-100 placeholder-slate-500 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed" />
+            
+            <button id="send-btn" disabled class="text-indigo-400 hover:text-indigo-300 font-medium text-sm px-4 py-3 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed">
                 Send
             </button>
         </div>
@@ -62,15 +82,15 @@
         let isChatting = false;
         let typingTimeout;
 
-        function updateStatus(text, colorClass) {
+        function updateStatus(text, borderAndTextColorClass) {
             statusDiv.textContent = text;
-            statusDiv.className = `text-sm font-medium bg-gray-900 px-3 py-1 rounded-full border border-gray-700 ${colorClass}`;
+            statusDiv.className = `text-xs tracking-wider uppercase font-semibold bg-slate-900/80 px-3 py-1.5 rounded-md border ${borderAndTextColorClass}`;
         }
 
         function appendSystemMessage(text) {
             if(welcomeMsg) welcomeMsg.remove();
             const msgRow = document.createElement('div');
-            msgRow.className = "text-center text-sm font-semibold text-gray-500 tracking-wide my-2 uppercase bg-gray-800/40 py-1 rounded border border-gray-800/80";
+            msgRow.className = "text-center text-xs tracking-wide font-medium text-slate-500 my-3 uppercase bg-slate-900/30 border border-slate-800/40 py-2 px-4 rounded-lg max-w-xs mx-auto";
             msgRow.textContent = text;
             chatBox.appendChild(msgRow);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -81,8 +101,8 @@
             container.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'}`;
 
             const bubble = document.createElement('div');
-            bubble.className = `max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-md leading-relaxed ${
-                isMe ? 'bg-teal-500 text-gray-950 font-medium rounded-tr-none' : 'bg-gray-800 text-gray-100 rounded-tl-none border border-gray-700'
+            bubble.className = `max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed shadow-sm transition-all ${
+                isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-slate-900 text-slate-200 rounded-bl-none border border-slate-800/80'
             }`;
             bubble.textContent = text;
 
@@ -95,7 +115,7 @@
             if (!isChatting) {
                 socket.emit('findMatch');
                 actionBtn.textContent = 'Skip';
-                actionBtn.className = "bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 rounded-lg transition duration-200 active:scale-95 shadow-md";
+                actionBtn.className = "bg-slate-800 hover:bg-slate-700/80 text-rose-400 hover:text-rose-300 font-medium text-sm px-6 py-3 rounded-lg border border-slate-700/50 transition-all duration-200 active:scale-95 shadow-md";
             } else {
                 socket.emit('findMatch');
             }
@@ -128,8 +148,8 @@
             msgInput.disabled = true;
             sendBtn.disabled = true;
             typingIndicator.classList.add('hidden');
-            updateStatus('Searching...', 'text-yellow-400');
-            appendSystemMessage('Searching for a stranger at midnight...');
+            updateStatus('Searching', 'border-amber-500/20 text-amber-400');
+            appendSystemMessage('Looking for someone...');
         });
 
         socket.on('matched', () => {
@@ -137,9 +157,9 @@
             msgInput.disabled = false;
             sendBtn.disabled = false;
             msgInput.focus();
-            updateStatus('Connected', 'text-green-400');
+            updateStatus('Connected', 'border-emerald-500/20 text-emerald-400');
             chatBox.innerHTML = ''; 
-            appendSystemMessage('You are paired with a random stranger. Say hi!');
+            appendSystemMessage('Connected with a stranger');
         });
 
         socket.on('receiveMessage', (message) => {
@@ -159,10 +179,10 @@
             msgInput.disabled = true;
             sendBtn.disabled = true;
             typingIndicator.classList.add('hidden');
-            updateStatus('Disconnected', 'text-red-400');
-            appendSystemMessage('Stranger disconnected.');
-            actionBtn.textContent = 'Find New';
-            actionBtn.className = "bg-teal-500 hover:bg-teal-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition duration-200 active:scale-95 shadow-md";
+            updateStatus('Disconnected', 'border-rose-500/20 text-rose-400');
+            appendSystemMessage('Stranger left the conversation');
+            actionBtn.textContent = 'Find Stranger';
+            actionBtn.className = "bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-3 rounded-lg transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-600/10 whitespace-nowrap";
         });
     </script>
 </body>
