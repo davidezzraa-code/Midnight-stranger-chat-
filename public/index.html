@@ -6,64 +6,75 @@
     <title>Midnight Stranger Chat</title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://tailwindcss.com"></script>
-    <!-- Loading JetBrains Mono & Space Grotesk for the authentic Chitchat style -->
+    
+    <!-- Premium Fonts: Plus Jakarta Sans for UI, Cabinet Grotesk for the Headings -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fontshare.com[]=cabinet-grotesk@800,900&display=swap');
+        
         body {
-            background-color: #FFFFFF;
-            font-family: 'Space Grotesk', sans-serif;
-            
+            background-color: #000000;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        .chitchat-logo {
-            font-family: 'JetBrains Mono', monospace;
-            text-transform: lowercase;
-            letter-spacing: -0.06em;
+        .premium-logo {
+            font-family: 'Cabinet Grotesk', sans-serif;
+            letter-spacing: -0.04em;
         }
-        /* Stark micro scrollbar matching Chitchat's platform interface */
+        /* Custom Ultra-thin stark scrollbar */
         ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-track { background: #000000; }
-        ::-webkit-scrollbar-thumb { background: #222222; }
+        ::-webkit-scrollbar-thumb { background: #1f1f1f; border-radius: 2px; }
+        
+        /* Subtle micro-glow for messages */
+        .my-msg-glow {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+        }
     </style>
 </head>
-<body class="text-white h-screen flex flex-col antialiased">
+<body class="text-white h-screen flex flex-col antialiased selection:bg-white selection:text-black">
 
-    <!-- Chitchat Header Layout -->
-    <header class="bg-[#000000] border-b border-[#161616] px-6 py-4 flex justify-between items-center select-none">
-        <h1 class="chitchat-logo text-xl font-extrabold tracking-tighter text-white">
-            midnight<span class="text-neutral-600 font-bold">stranger</span>
+    <!-- Premium Navigation Header -->
+    <header class="bg-[#000000] border-b border-[#121212] px-8 py-5 flex justify-between items-center select-none">
+        <h1 class="premium-logo text-xl font-black text-white tracking-tighter">
+            MIDNIGHT<span class="text-neutral-700 font-extrabold">STRANGER</span>
         </h1>
-        <div id="status" class="text-[10px] font-mono tracking-widest text-neutral-500 bg-[#0c0c0c] border border-[#1a1a1a] px-2.5 py-1 rounded">
-            OFFLINE
+        <div class="flex items-center gap-2">
+            <span id="status-dot" class="h-1.5 w-1.5 rounded-full bg-neutral-700 transition-all duration-300"></span>
+            <div id="status" class="text-[10px] font-mono tracking-widest text-neutral-500 uppercase">
+                Offline
+            </div>
         </div>
     </header>
 
-    <!-- Main Live Message Screen -->
-    <main id="chat-box" class="flex-1 p-6 overflow-y-auto max-w-2xl w-full mx-auto flex flex-col justify-end space-y-3.5">
-        <div class="text-center max-w-xs mx-auto my-auto space-y-1 transition-all select-none" id="welcome-msg">
-            <p class="text-xs font-semibold text-neutral-500 uppercase tracking-widest font-mono">1v1 Anonymous</p>
-            <p class="text-xs text-neutral-600">Press Start Chat below to match with a stranger instantly.</p>
+    <!-- Main Message Screen -->
+    <main id="chat-box" class="flex-1 p-8 overflow-y-auto max-w-3xl w-full mx-auto flex flex-col justify-end space-y-4">
+        <div class="text-center max-w-sm mx-auto my-auto space-y-2 select-none transition-all" id="welcome-msg">
+            <p class="text-xs font-mono text-neutral-500 uppercase tracking-widest">Secure Encrypted Session</p>
+            <p class="text-xs text-neutral-600 leading-relaxed">Your conversation is fully temporary. Click start to establish a handshake connection with an anonymous stranger.</p>
         </div>
     </main>
 
-    <!-- Bottom Controls (Start Button and Textbox Side-By-Side) -->
-    <footer class="p-4 bg-[#000000] border-t border-[#161616] sticky bottom-0">
-        <div class="max-w-2xl mx-auto flex items-center gap-2">
+    <!-- Bottom Interface Controls (Start Button + Input Box Grid) -->
+    <footer class="p-6 bg-[#000000] border-t border-[#121212] sticky bottom-0">
+        <div class="max-w-3xl mx-auto flex items-center gap-3">
             
-            <!-- Action Trigger placed first on the far left -->
-            <button id="action-btn" class="bg-white hover:bg-neutral-200 text-black font-bold text-xs uppercase tracking-wider h-[46px] px-5 rounded transition-all active:scale-[0.98] whitespace-nowrap">
+            <!-- Action Button - Placed Left side first -->
+            <button id="action-btn" class="bg-white hover:bg-neutral-200 text-black font-semibold text-xs uppercase tracking-wider h-12 px-6 rounded transition-all duration-150 active:scale-[0.97] whitespace-nowrap">
                 Start Chat
             </button>
             
-            <!-- Compact Message Entry Bar -->
-            <input id="msg-input" type="text" placeholder="Type a message..." disabled
-                class="flex-1 bg-[#0a0a0a] border border-[#1a1a1a] text-sm h-[46px] px-4 text-white placeholder-neutral-700 rounded focus:outline-none focus:border-[#333333] focus:bg-[#0f0f0f] disabled:opacity-20 disabled:cursor-not-allowed transition-all" />
-            
-            <!-- Minimal Send Button -->
-            <button id="send-btn" disabled class="bg-[#0a0a0a] border border-[#1a1a1a] text-neutral-500 hover:text-white hover:border-[#333333] text-xs uppercase tracking-wider font-bold h-[46px] px-4 rounded transition-all active:scale-[0.98] disabled:opacity-10 disabled:cursor-not-allowed">
-                Send
-            </button>
+            <!-- Message Input Area -->
+            <div class="flex-1 relative flex items-center">
+                <input id="msg-input" type="text" placeholder="Send an anonymous message..." disabled
+                    class="w-full bg-[#090909] border border-[#1a1a1a] text-sm h-12 px-4 pr-16 text-white placeholder-neutral-700 rounded focus:outline-none focus:border-[#444444] focus:bg-[#0d0d0d] disabled:opacity-20 disabled:cursor-not-allowed transition-all" />
+                
+                <!-- Compact Internal Send Trigger inside the container field -->
+                <button id="send-btn" disabled class="absolute right-2 text-neutral-500 hover:text-white text-xs uppercase tracking-widest font-semibold px-3 py-2 rounded transition-all disabled:opacity-0 disabled:cursor-not-allowed">
+                    Send
+                </button>
+            </div>
         </div>
     </footer>
 
@@ -73,21 +84,23 @@
         const chatBox = document.getElementById('chat-box');
         const welcomeMsg = document.getElementById('welcome-msg');
         const statusDiv = document.getElementById('status');
+        const statusDot = document.getElementById('status-dot');
         const actionBtn = document.getElementById('action-btn');
         const msgInput = document.getElementById('msg-input');
         const sendBtn = document.getElementById('send-btn');
 
         let isChatting = false;
 
-        function updateStatus(text, borderAndTextColor) {
+        function updateStatus(text, dotColorClass, textColorClass) {
             statusDiv.textContent = text;
-            statusDiv.className = `text-[10px] font-mono tracking-widest bg-black px-2.5 py-1 rounded border ${borderAndTextColor}`;
+            statusDiv.className = `text-[10px] font-mono tracking-widest uppercase ${textColorClass}`;
+            statusDot.className = `h-1.5 w-1.5 rounded-full transition-all duration-300 ${dotColorClass}`;
         }
 
         function appendSystemMessage(text) {
             if(welcomeMsg) welcomeMsg.remove();
             const msgRow = document.createElement('div');
-            msgRow.className = "text-center text-[10px] tracking-wider font-mono text-neutral-600 my-1 uppercase py-1 px-4";
+            msgRow.className = "text-center text-[10px] tracking-widest font-mono text-neutral-600 my-2 uppercase bg-[#070707] border border-[#141414] py-2 px-4 rounded max-w-xs mx-auto shadow-sm select-none";
             msgRow.textContent = text;
             chatBox.appendChild(msgRow);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -98,9 +111,9 @@
             container.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'}`;
 
             const bubble = document.createElement('div');
-            // Clean, low-radius message boxes identical to Chitchat style
-            bubble.className = `max-w-[85%] rounded-md px-3.5 py-2 text-sm leading-relaxed ${
-                isMe ? 'bg-[#1a1a1a] text-white border border-[#262626]' : 'bg-[#0a0a0a] text-neutral-300 border border-[#161616]'
+            // Advanced clean styling borders mimicking high end tech dash UI frames
+            bubble.className = `max-w-[80%] rounded-lg px-4 py-3 text-sm leading-relaxed my-msg-glow transition-all ${
+                isMe ? 'bg-white text-black font-medium rounded-tr-none' : 'bg-[#090909] text-neutral-200 border border-[#1a1a1a] rounded-tl-none'
             }`;
             bubble.textContent = text;
 
@@ -113,7 +126,7 @@
             if (!isChatting) {
                 socket.emit('findMatch');
                 actionBtn.textContent = 'Skip';
-                actionBtn.className = "bg-neutral-900 hover:bg-neutral-800 text-rose-500 border border-[#222222] font-bold text-xs uppercase tracking-wider h-[46px] px-5 rounded transition-all active:scale-[0.98] whitespace-nowrap";
+                actionBtn.className = "bg-[#0d0d0d] hover:bg-[#141414] text-rose-500 border border-rose-950/40 font-semibold text-xs uppercase tracking-wider h-12 px-6 rounded transition-all duration-150 active:scale-[0.97] whitespace-nowrap";
             } else {
                 socket.emit('findMatch');
             }
@@ -135,8 +148,8 @@
             isChatting = false;
             msgInput.disabled = true;
             sendBtn.disabled = true;
-            updateStatus('SEARCHING', 'border-amber-500/30 text-amber-500');
-            appendSystemMessage('connecting to the pool...');
+            updateStatus('Searching', 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]', 'text-amber-500');
+            appendSystemMessage('Routing matching tunnels...');
         });
 
         socket.on('matched', () => {
@@ -144,9 +157,9 @@
             msgInput.disabled = false;
             sendBtn.disabled = false;
             msgInput.focus();
-            updateStatus('CONNECTED', 'border-emerald-500/30 text-emerald-500');
+            updateStatus('Connected', 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]', 'text-emerald-500');
             chatBox.innerHTML = ''; 
-            appendSystemMessage('system: matched with a stranger.');
+            appendSystemMessage('Handshake Success: Connected.');
         });
 
         socket.on('receiveMessage', (message) => {
@@ -157,10 +170,10 @@
             isChatting = false;
             msgInput.disabled = true;
             sendBtn.disabled = true;
-            updateStatus('DISCONNECTED', 'border-rose-500/30 text-rose-500');
-            appendSystemMessage('system: stranger left the chat room.');
+            updateStatus('Disconnected', 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]', 'text-rose-500');
+            appendSystemMessage('Tunnel Dropped: Stranger Left.');
             actionBtn.textContent = 'Start Chat';
-            actionBtn.className = "bg-white hover:bg-neutral-200 text-black font-bold text-xs uppercase tracking-wider h-[46px] px-5 rounded transition-all active:scale-[0.98] whitespace-nowrap";
+            actionBtn.className = "bg-white hover:bg-neutral-200 text-black font-semibold text-xs uppercase tracking-wider h-12 px-6 rounded transition-all duration-150 active:scale-[0.97] whitespace-nowrap";
         });
     </script>
 </body>
