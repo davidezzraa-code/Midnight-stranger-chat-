@@ -6,63 +6,60 @@
     <title>Midnight Stranger Chat</title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://tailwindcss.com"></script>
+    <!-- Importing a premium geometric font for the website name -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="family">
     <style>
-        /* Premium custom scrollbar styling */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #0b0f19; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
-        
-        /* Frosted Glass effect class */
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+        body {
+            background-color: #000000;
         }
+        .brand-font {
+            font-family: 'Syne', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: -0.05em;
+        }
+        /* Custom scrollbar for absolute black design */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #000000; }
+        ::-webkit-scrollbar-thumb { background: #333333; border-radius: 2px; }
     </style>
 </head>
-<body class="bg-[#090d16] text-slate-200 h-screen flex flex-col font-sans antialiased selection:bg-indigo-500/30">
+<body class="text-white h-screen flex flex-col font-sans antialiased">
 
-    <!-- Premium Minimal Header -->
-    <header class="glass-panel border-b border-slate-800/60 p-5 sticky top-0 z-50 flex justify-between items-center transition-all">
-        <div class="flex items-center gap-3">
-            <div class="h-2.5 w-2.5 rounded-full bg-indigo-500 animate-pulse"></div>
-            <h1 class="text-lg font-medium tracking-tight text-white">
-                midnight<span class="text-indigo-400 font-light">stranger</span>
-            </h1>
-        </div>
-        <div id="status" class="text-xs tracking-wider uppercase font-semibold text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-md border border-slate-800/80 transition-all">
-            Offline
+    <!-- Minimal Top Navigation Header -->
+    <header class="bg-[#000000] border-b border-[#222222] p-5 flex justify-between items-center">
+        <h1 class="brand-font text-2xl font-extrabold tracking-tighter text-white">
+            midnight<span class="text-neutral-500">stranger</span>
+        </h1>
+        <div id="status" class="text-xs font-mono tracking-widest uppercase text-neutral-400 border border-[#222222] px-3 py-1 rounded">
+            OFFLINE
         </div>
     </header>
 
-    <!-- Main Dynamic Chat Interface -->
-    <main id="chat-box" class="flex-1 p-6 overflow-y-auto max-w-3xl w-full mx-auto flex flex-col justify-end space-y-5">
-        <div class="text-center text-slate-500 max-w-sm mx-auto my-auto space-y-2 transition-opacity" id="welcome-msg">
-            <p class="text-base text-slate-400 font-medium">Safe. Anonymous. Instant.</p>
-            <p class="text-xs leading-relaxed text-slate-500">Click the action button below to instantly connect with a random person under the cover of midnight.</p>
+    <!-- Main Chat Feed Window -->
+    <main id="chat-box" class="flex-1 p-6 overflow-y-auto max-w-4xl w-full mx-auto flex flex-col justify-end space-y-4">
+        <div class="text-center text-neutral-500 max-w-xs mx-auto my-auto space-y-1" id="welcome-msg">
+            <p class="text-sm font-semibold text-neutral-400">Anonymous Midnight Chat</p>
+            <p class="text-xs text-neutral-600">Press Start Chat below to meet someone instantly.</p>
         </div>
     </main>
 
-    <!-- Sleek Typing Feedback Banner -->
-    <div class="max-w-3xl w-full mx-auto px-6 h-5">
-        <div id="typing-indicator" class="text-xs text-indigo-400/90 font-medium tracking-wide hidden animate-pulse">
-            Stranger is typing...
-        </div>
-    </div>
-
-    <!-- Minimalist Interface Control Center -->
-    <footer class="p-6 bg-gradient-to-t from-[#090d16] via-[#090d16]/90 to-transparent sticky bottom-0">
-        <div class="max-w-3xl mx-auto flex items-center gap-4 bg-slate-900/40 p-2 rounded-xl border border-slate-800/50 glass-panel shadow-2xl">
+    <!-- Bottom Interface Layout (Action Controls First) -->
+    <footer class="p-6 bg-[#000000] border-t border-[#222222]">
+        <div class="max-w-4xl mx-auto flex items-center gap-3">
             
-            <button id="action-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-3 rounded-lg transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-600/10 whitespace-nowrap">
+            <!-- Start / Skip Button Placed First on the Left side -->
+            <button id="action-btn" class="bg-white hover:bg-neutral-200 text-black font-bold text-xs uppercase tracking-wider px-6 py-4 rounded transition-all duration-150 active:scale-95 whitespace-nowrap">
                 Start Chat
             </button>
             
-            <input id="msg-input" type="text" placeholder="Write an anonymous message..." disabled
-                class="flex-1 bg-transparent text-sm px-2 py-3 text-slate-100 placeholder-slate-500 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed" />
+            <!-- Message Input Area directly next to it -->
+            <input id="msg-input" type="text" placeholder="Type your message..." disabled
+                class="flex-1 bg-[#111111] border border-[#222222] text-sm px-4 py-4 text-white placeholder-neutral-600 rounded focus:outline-none focus:border-neutral-400 disabled:opacity-30 disabled:cursor-not-allowed" />
             
-            <button id="send-btn" disabled class="text-indigo-400 hover:text-indigo-300 font-medium text-sm px-4 py-3 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+            <!-- Send Trigger Button -->
+            <button id="send-btn" disabled class="bg-[#111111] border border-[#222222] text-neutral-400 hover:text-white hover:border-neutral-400 text-xs uppercase tracking-wider font-bold px-5 py-4 rounded transition-all disabled:opacity-20 disabled:cursor-not-allowed">
                 Send
             </button>
         </div>
@@ -77,20 +74,18 @@
         const actionBtn = document.getElementById('action-btn');
         const msgInput = document.getElementById('msg-input');
         const sendBtn = document.getElementById('send-btn');
-        const typingIndicator = document.getElementById('typing-indicator');
 
         let isChatting = false;
-        let typingTimeout;
 
-        function updateStatus(text, borderAndTextColorClass) {
+        function updateStatus(text, borderClass) {
             statusDiv.textContent = text;
-            statusDiv.className = `text-xs tracking-wider uppercase font-semibold bg-slate-900/80 px-3 py-1.5 rounded-md border ${borderAndTextColorClass}`;
+            statusDiv.className = `text-xs font-mono tracking-widest uppercase bg-black px-3 py-1 rounded border ${borderClass}`;
         }
 
         function appendSystemMessage(text) {
             if(welcomeMsg) welcomeMsg.remove();
             const msgRow = document.createElement('div');
-            msgRow.className = "text-center text-xs tracking-wide font-medium text-slate-500 my-3 uppercase bg-slate-900/30 border border-slate-800/40 py-2 px-4 rounded-lg max-w-xs mx-auto";
+            msgRow.className = "text-center text-[10px] tracking-widest font-mono text-neutral-500 my-2 uppercase bg-[#111111] border border-[#222222] py-2 px-4 rounded max-w-xs mx-auto";
             msgRow.textContent = text;
             chatBox.appendChild(msgRow);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -101,8 +96,8 @@
             container.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'}`;
 
             const bubble = document.createElement('div');
-            bubble.className = `max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed shadow-sm transition-all ${
-                isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-slate-900 text-slate-200 rounded-bl-none border border-slate-800/80'
+            bubble.className = `max-w-[80%] rounded px-4 py-3 text-sm leading-relaxed ${
+                isMe ? 'bg-white text-black font-medium' : 'bg-[#111111] text-white border border-[#222222]'
             }`;
             bubble.textContent = text;
 
@@ -115,7 +110,7 @@
             if (!isChatting) {
                 socket.emit('findMatch');
                 actionBtn.textContent = 'Skip';
-                actionBtn.className = "bg-slate-800 hover:bg-slate-700/80 text-rose-400 hover:text-rose-300 font-medium text-sm px-6 py-3 rounded-lg border border-slate-700/50 transition-all duration-200 active:scale-95 shadow-md";
+                actionBtn.className = "bg-neutral-900 hover:bg-neutral-800 text-rose-500 border border-neutral-800 font-bold text-xs uppercase tracking-wider px-6 py-4 rounded transition-all duration-150 active:scale-95 whitespace-nowrap";
             } else {
                 socket.emit('findMatch');
             }
@@ -127,29 +122,18 @@
                 appendMessage(text, true);
                 socket.emit('sendMessage', text);
                 msgInput.value = '';
-                socket.emit('typing', false);
             }
         }
 
         sendBtn.addEventListener('click', sendMessage);
         msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-        msgInput.addEventListener('input', () => {
-            if (!isChatting) return;
-            socket.emit('typing', true);
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                socket.emit('typing', false);
-            }, 2000);
-        });
-
         socket.on('waiting', () => {
             isChatting = false;
             msgInput.disabled = true;
             sendBtn.disabled = true;
-            typingIndicator.classList.add('hidden');
-            updateStatus('Searching', 'border-amber-500/20 text-amber-400');
-            appendSystemMessage('Looking for someone...');
+            updateStatus('SEARCHING', 'border-amber-500/40 text-amber-400');
+            appendSystemMessage('Searching for a stranger...');
         });
 
         socket.on('matched', () => {
@@ -157,32 +141,23 @@
             msgInput.disabled = false;
             sendBtn.disabled = false;
             msgInput.focus();
-            updateStatus('Connected', 'border-emerald-500/20 text-emerald-400');
+            updateStatus('CONNECTED', 'border-emerald-500/40 text-emerald-400');
             chatBox.innerHTML = ''; 
-            appendSystemMessage('Connected with a stranger');
+            appendSystemMessage('System: Stranger paired successfully.');
         });
 
         socket.on('receiveMessage', (message) => {
             appendMessage(message, false);
         });
 
-        socket.on('partnerTyping', (isTyping) => {
-            if (isTyping) {
-                typingIndicator.classList.remove('hidden');
-            } else {
-                typingIndicator.classList.add('hidden');
-            }
-        });
-
         socket.on('partnerDisconnected', () => {
             isChatting = false;
             msgInput.disabled = true;
             sendBtn.disabled = true;
-            typingIndicator.classList.add('hidden');
-            updateStatus('Disconnected', 'border-rose-500/20 text-rose-400');
-            appendSystemMessage('Stranger left the conversation');
-            actionBtn.textContent = 'Find Stranger';
-            actionBtn.className = "bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-3 rounded-lg transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-600/10 whitespace-nowrap";
+            updateStatus('DISCONNECTED', 'border-rose-500/40 text-rose-500');
+            appendSystemMessage('System: Stranger left the chat.');
+            actionBtn.textContent = 'Start Chat';
+            actionBtn.className = "bg-white hover:bg-neutral-200 text-black font-bold text-xs uppercase tracking-wider px-6 py-4 rounded transition-all duration-150 active:scale-95 whitespace-nowrap";
         });
     </script>
 </body>
